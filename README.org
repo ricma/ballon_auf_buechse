@@ -27,7 +27,7 @@
    :VISIBILITY: folded
    :END:
 
-   [[file:./pictures/20181117_163413.jpg]]
+   [[file:./pictures/20181117_163413_small.jpg]]
 
 ** Install necessary Software
    :PROPERTIES:
