@@ -1,0 +1,42 @@
+#+AUTHOR: Martin Richter
+#+EMAIL: martin.richter@nottingha,.ac.uk
+#+TITLE: Festival of Science and Curiosity -- Acoustic Eigenmodes
+#+STARTUP: showall inlineimages latexpreview entitiesplain hideblocks
+#+OPTIONS: ^:nil toc:nil
+#+OPTIONS: tex:dvipng  # HTML export with pngs rather than MathJax
+
+* Contribution
+
+  Show eigenfrequencies etc. using ballons and some tubes.
+
+* Using a Speaker and Python
+
+** Example
+
+   [[file:play_sine.py]]
+
+   [[file:Fourier_trafo_balloon.py]]
+
+   #+CAPTION: Example Fourier transformation for plucked balloon
+   #+NAME: fig_fourier_example
+   #+ATTR_HTML: :style width: 100%
+   [[file:./pictures/ballon_auf_Dose.png]]
+
+** Pictures
+   :PROPERTIES:
+   :VISIBILITY: folded
+   :END:
+
+   [[file:./pictures/20181117_163413.jpg]]
+
+** Install necessary Software
+   :PROPERTIES:
+   :VISIBILITY: folded
+   :END:
+
+   For creating sine-wave tones:
+   #+BEGIN_SRC shell-script
+     sudo apt-get install python3-all-dev portaudio19-dev
+     sudo -H pip3 install pyaudio
+   #+END_SRC
+
