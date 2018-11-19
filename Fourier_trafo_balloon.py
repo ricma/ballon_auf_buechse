@@ -28,7 +28,7 @@ def analyse(filename, fig=None):
         window_length=1 + 2 * (len(t) // 2000),
         polyorder=7,
         mode="nearest")
-    w = scipy.signal.hanning(1 + 2 * (len(t) // 2000), sym=True)
+    w = scipy.signal.windows.hann(1 + 2 * (len(t) // 2000), sym=True)
     smooth = np.convolve(w / w.sum(), smooth, mode="same")
 
     # do the fourier transform
@@ -49,7 +49,7 @@ def analyse(filename, fig=None):
         window_length=55,
         polyorder=5,
         mode="nearest")
-    w = scipy.signal.hanning(45, sym=True)
+    w = scipy.signal.windows.hann(45, sym=True)
     a_c_smooth2 = np.convolve(5 * w / w.sum(), a_c_smooth2, mode="same")
 
     nu = nu[:len(t) // 2]
