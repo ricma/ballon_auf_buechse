@@ -8,18 +8,10 @@ See Also
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal
-import aifc
 
 def analyse(filename, fig=None):
 
-    with aifc.open(filename, mode="r") as audio:
-
-        params = audio.getparams()
-        raw = audio.readframes(params.nframes)
-
-    # common datatypes are listed here:
-    # [[https://docs.scipy.org/doc/scipy/reference/generated/scipy.io.wavfile.read.html#scipy.io.wavfile.read]]
-    integers = np.fromstring(raw, np.int16)
+    integers = np.memmap(filename, dtype='h', mode='r')[:-1000]
     t = np.arange(len(integers)) / params.framerate
 
     # remove noise from the signal
@@ -99,9 +91,9 @@ def analyse(filename, fig=None):
 # filename =
 fig = None
 for filename in [
-        "ballon_auf_Dose_2.aiff",
-        "ballon_auf_Dose_3.aiff",
-        "ballon_auf_Dose_4.aiff"]:
+        "ballon_auf_Dose_2.wav",
+        "ballon_auf_Dose_3.wav",
+        "ballon_auf_Dose_4.wav"]:
 
     fig = analyse("audio/" + filename, fig=fig)
 
