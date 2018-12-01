@@ -101,7 +101,11 @@ def analyse(filename, fig=None):
     Analyse spectrum of raw audio data
     """
     framerate = 44100
-    integers = np.memmap(filename, dtype='h', mode='r')[:-1000]
+    integers = np.memmap(filename, dtype='h', mode='r')
+
+    # The last bit is looking a bit weird
+    integers = integers[:-1000]
+
     t = np.arange(len(integers)) / framerate
 
     # remove noise from the signal
@@ -123,6 +127,7 @@ def analyse(filename, fig=None):
     nu = np.arange(len(t)) / t.max()
 
     # only plot the positive frequencies
+    nu = nu[:len(t) // 2]
     a_c = np.fft.fft(integers)[:len(t) // 2]
     a_c_smooth = np.fft.fft(smooth)[:len(t) // 2]
 
@@ -133,8 +138,6 @@ def analyse(filename, fig=None):
         mode="nearest")
     w = scipy.signal.windows.hann(45, sym=True)
     a_c_smooth2 = np.convolve(5 * w / w.sum(), a_c_smooth2, mode="same")
-
-    nu = nu[:len(t) // 2]
 
     if fig is None:
         fig = plt.figure(figsize=(6, 3))
@@ -147,31 +150,29 @@ def analyse(filename, fig=None):
         ax_f.set_xlabel(r"$\nu / \mathrm{Hz}$")
         ax_f.set_ylabel(r"$|g(\nu)|$")
         ax_f.set_yscale("log")
-        ax_f.set_ylim(1e5, 1e8)
 
         fig.tight_layout()
 
     else:
         ax, ax_f = fig.get_axes()
 
-    frac = 30
-    slc = slice(None, len(t) // frac)
+    t_max_plot = 0.2
+    slc = slice(None, np.argmin(np.abs(t - t_max_plot)))
     plot_1 = ax.plot(t[slc] * 1000, integers[slc],
             zorder=-10)[0]
     plot_2 = ax.plot(t[slc] * 1000, smooth[slc])[0]
 
     # Only plot low frequencies
-    frac = 35
-    ax_f.plot(nu[:len(nu) // frac],
-              np.abs(a_c[:len(nu) // frac]),
+    nu_min = 200
+    nu_max = 650
+    where = slice(*np.nonzero(
+        (nu_min <= nu) & (nu <= nu_max))[0][[0, -1]])
+    ax_f.plot(nu[where],
+              np.abs(a_c[where]),
               alpha=0.2, zorder=-10,
               color=plot_1.get_color())
-    # ax_f.plot(nu[:len(nu) // frac],
-    #           np.abs(a_c_smooth[:len(nu) // frac]),
-    #           alpha=0.6, zorder=-5,
-    #           color=plot_2.get_color())
-    ax_f.plot(nu[:len(nu) // frac],
-              np.abs(a_c_smooth2[:len(nu) // frac]),
+    ax_f.plot(nu[where],
+              np.abs(a_c_smooth2[where]),
               color=plot_2.get_color())
 
     return fig
@@ -182,8 +183,9 @@ if __name__ == "__main__":
     fig = None
     for filename in [
             # "ballon_auf_Dose_2.wav",
-            # "ballon_auf_Dose_3.wav",
-            "ballon_auf_Dose_4.wav"]:
+            "ballon_auf_Dose_3.wav",
+            "ballon_auf_Dose_4.wav"
+            ]:
 
         fig = analyse("audio/" + filename, fig=fig)
 
