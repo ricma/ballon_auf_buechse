@@ -8,11 +8,101 @@ See Also
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal
+import pyaudio
+import aifc
+
+
+class ToneCallback:
+    """
+    Register as a callback to play a tone
+    """
+    def __init__(
+            self, ax,
+            volume=1.0, fs=100000, duration=5, **kwargs):
+        """
+        Parameters
+        ----------
+        ax : Subplot
+            Subplot with spectrum
+        volume : double between [0, 1]
+            Volume to play sound with.
+        fs : integer
+            Sampling rate in Hz
+        duration: float
+            Time in seconds the tone is played
+        bind : boolean, optional
+            If True, then call fig.canvas.mpl_connect on self.
+        """
+        self.ax = ax
+        self.volume = volume
+        self.fs = fs
+        self.duration = duration
+
+        self.p = pyaudio.PyAudio()
+
+        if kwargs.get("bind", True):
+            fig = self.ax.get_figure()
+            fig.canvas.mpl_connect("button_press_event", self)
+
+    def __call__(self, event):
+        """
+        Play tone
+        """
+        if not event.inaxes is self.ax:
+            return
+        if event.button != 1:
+            return
+        if plt.get_current_fig_manager().toolbar.mode != '':
+            return
+
+        frequency = event.xdata
+        self.play_tone(frequency)
+
+    def play_tone(self, freq):
+        """
+        Play a tone with the given frequency
+
+        Parameters
+        ----------
+        freq : float
+            Frequency to play
+
+        See Also
+        --------
+        [[https://stackoverflow.com/a/27978895/2959456]]
+        """
+        print("Playing {0:1.3f} Hz".format(freq))
+        # generate samples, note conversion to float32 array
+        #
+        samples = (np.sin(
+            2 * np.pi * np.arange(self.fs * self.duration) *
+            freq / self.fs)).astype(np.float32)
+
+        # for paFloat32 sample values must be in range [-1.0, 1.0]
+        stream = self.p.open(
+            format=pyaudio.paFloat32,
+            channels=1,
+            rate=self.fs,
+            output=True)
+
+        stream.write(self.volume * samples)
+        stream.stop_stream()
+        stream.close()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.p.terminate()
+
 
 def analyse(filename, fig=None):
-
+    """
+    Analyse spectrum of raw audio data
+    """
+    framerate = 44100
     integers = np.memmap(filename, dtype='h', mode='r')[:-1000]
-    t = np.arange(len(integers)) / params.framerate
+    t = np.arange(len(integers)) / framerate
 
     # remove noise from the signal
     smooth = scipy.signal.savgol_filter(
@@ -87,17 +177,20 @@ def analyse(filename, fig=None):
     return fig
 
 
-# filename = "ballon_auf_Dose.aiff"
-# filename =
-fig = None
-for filename in [
-        "ballon_auf_Dose_2.wav",
-        "ballon_auf_Dose_3.wav",
-        "ballon_auf_Dose_4.wav"]:
+if __name__ == "__main__":
 
-    fig = analyse("audio/" + filename, fig=fig)
+    fig = None
+    for filename in [
+            # "ballon_auf_Dose_2.wav",
+            # "ballon_auf_Dose_3.wav",
+            "ballon_auf_Dose_4.wav"]:
 
-filename = "pictures/ballon_auf_Dose.png"
-plt.savefig(filename, transparent=True)
-print("[[file:{0}]]".format(filename))
-plt.show()
+        fig = analyse("audio/" + filename, fig=fig)
+
+    filename = "pictures/ballon_auf_Dose.png"
+    plt.savefig(filename, transparent=True)
+    print("[[file:{0}]]".format(filename))
+
+    ax_frequency = fig.get_axes()[1]
+    with ToneCallback(ax_frequency) as tc:
+        plt.show()
