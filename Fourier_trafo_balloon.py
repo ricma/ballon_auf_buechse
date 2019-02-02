@@ -10,7 +10,6 @@ import numpy as np
 import scipy.signal
 import pyaudio
 import wave
-import aifc
 
 
 class ToneCallback:
@@ -131,7 +130,7 @@ class ToneCallback:
         self.p.terminate()
 
 
-def analyse(filename, fig=None):
+def analyse(filename, fig=None, add_insets=None):
     """
     Analyse spectrum of raw audio data
     """
@@ -144,13 +143,13 @@ def analyse(filename, fig=None):
     t = np.arange(len(integers)) / framerate
 
     # remove noise from the signal
-    smooth = scipy.signal.savgol_filter(
-        integers,
-        window_length=1 + 2 * (len(t) // 2000),
-        polyorder=7,
-        mode="nearest")
+    # smooth = scipy.signal.savgol_filter(
+    #     integers,
+    #     window_length=1 + 2 * (len(t) // 2000),
+    #     polyorder=7,
+    #     mode="nearest")
     w = scipy.signal.windows.hann(1 + 2 * (len(t) // 2000), sym=True)
-    smooth = np.convolve(w / w.sum(), smooth, mode="same")
+    smooth = np.convolve(w / w.sum(), integers, mode="same")
 
     # do the fourier transform
     #
@@ -166,13 +165,13 @@ def analyse(filename, fig=None):
     a_c = np.fft.fft(integers)[:len(t) // 2]
     a_c_smooth = np.fft.fft(smooth)[:len(t) // 2]
 
-    a_c_smooth2 = scipy.signal.savgol_filter(
-        a_c_smooth,
-        window_length=55,
-        polyorder=5,
-        mode="nearest")
-    w = scipy.signal.windows.hann(45, sym=True)
-    a_c_smooth2 = np.convolve(5 * w / w.sum(), a_c_smooth2, mode="same")
+    # a_c_smooth2 = scipy.signal.savgol_filter(
+    #     a_c_smooth,
+    #     window_length=55,
+    #     polyorder=5,
+    #     mode="nearest")
+    # w = scipy.signal.windows.hann(45, sym=True)
+    # a_c_smooth2 = np.convolve(5 * w / w.sum(), a_c_smooth2, mode="same")
 
     if fig is None:
         fig = plt.figure(figsize=(6, 3))
@@ -199,7 +198,7 @@ def analyse(filename, fig=None):
 
     # Only plot low frequencies
     nu_min = 200
-    nu_max = 650
+    nu_max = 950
     where = slice(*np.nonzero(
         (nu_min <= nu) & (nu <= nu_max))[0][[0, -1]])
     ax_f.plot(nu[where],
@@ -207,10 +206,40 @@ def analyse(filename, fig=None):
               alpha=0.2, zorder=-10,
               color=plot_1.get_color())
     ax_f.plot(nu[where],
-              np.abs(a_c_smooth2[where]),
+              np.abs(a_c_smooth[where]),
               color=plot_2.get_color())
 
+    if callable(add_insets):
+        add_insets(ax_f)
+
     return fig
+
+
+def add_insets_version_1(ax):
+    """
+    Callback for creating insets with eigenfunctions
+
+    This is for 'ballon_auf_Dose_10_gruen_unten_offen.wav'
+    """
+    assoc = [
+        # which frequency belongs to which insret?
+        (865.1, "20190130_194429.jpg"),
+        (827.5, "20190130_194455.jpg"),
+        (892.4, "20190130_194704.jpg"),
+        (755.7, "20190130_194811.jpg"),
+        (715.9, "20190130_195154.jpg"),
+        (671.4, "20190130_195343.jpg"),
+        (640.7, "20190130_195404.jpg"),
+        (606.5, "20190130_195521.jpg"),
+        (497.1, "20190130_195655.jpg"),
+        (472.1, "20190130_195740.jpg"),
+        (410.5, "20190130_200528.jpg"),
+        (386.6, "20190130_200754.jpg"),
+        (355.4, "20190130_200827.jpg"),
+        (286.6, "20190130_200914.jpg"),
+        (259.3, "20190130_201126.jpg")]
+        # 20190130_201210.jpg
+        # 20190130_201223.jpg
 
 
 if __name__ == "__main__":
@@ -220,12 +249,21 @@ if __name__ == "__main__":
             # "ballon_auf_Dose_2.wav",
             # "ballon_auf_Dose_3.wav",
             # "ballon_auf_Dose_4.wav",
-            "ballon_auf_Dose_5.wav"
+            # "ballon_auf_Dose_5.wav"
+            #"ballon_auf_Dose_10_gruen_unten_offen.wav"
+            #"ballon_auf_Dose_11_gruen_unten_offen.wav",
+            #"ballon_auf_Dose_12_gruen_unten_offen.wav"
+            "ballon_auf_Dose_20_grosse_Dose_rot_unten_offen.wav"
             ]:
 
-        fig = analyse("audio/" + filename, fig=fig)
+        if filename == "ballon_auf_Dose_10_gruen_unten_offen.wav":
+            add_insets = add_insets_version_1
+        else:
+            add_insets = None
 
-    filename_png = "pictures/ballon_auf_Dose.png"
+        fig = analyse("audio/" + filename, fig=fig, add_insets=add_insets)
+
+    filename_png = "pictures/ballon_auf_Dose_new.png"
     plt.savefig(filename_png, transparent=True)
     print("[[file:{0}]]".format(filename_png))
 
@@ -236,5 +274,5 @@ if __name__ == "__main__":
 Press 't' for play the tone,
 click on the maxima right to play sine tone""")
     with ToneCallback(ax_time, ax_frequency, "audio/" + filename,
-                      duration=10, volume=0.1) as tc:
+                      duration=3, volume=0.5) as tc:
         plt.show()
