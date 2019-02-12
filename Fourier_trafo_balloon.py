@@ -250,10 +250,10 @@ if __name__ == "__main__":
             # "ballon_auf_Dose_3.wav",
             # "ballon_auf_Dose_4.wav",
             # "ballon_auf_Dose_5.wav"
-            #"ballon_auf_Dose_10_gruen_unten_offen.wav"
+            "ballon_auf_Dose_10_gruen_unten_offen.wav"
             #"ballon_auf_Dose_11_gruen_unten_offen.wav",
             #"ballon_auf_Dose_12_gruen_unten_offen.wav"
-            "ballon_auf_Dose_20_grosse_Dose_rot_unten_offen.wav"
+            #"ballon_auf_Dose_20_grosse_Dose_rot_unten_offen.wav"
             ]:
 
         if filename == "ballon_auf_Dose_10_gruen_unten_offen.wav":

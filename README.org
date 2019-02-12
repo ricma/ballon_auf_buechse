@@ -7,7 +7,7 @@
 
 * Contribution
 
-  Show eigenfrequencies etc. using ballons and some tubes.
+  Show eigenfrequencies etc. using balloons and some tubes.
 
 * Using a Speaker and Python
 
