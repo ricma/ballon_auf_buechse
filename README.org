@@ -27,7 +27,13 @@
    :VISIBILITY: folded
    :END:
 
-   [[file:./pictures/20181117_163413_small.jpg]]
+*** With Bluetooth Speaker
+
+    [[file:./pictures/resonance_speaker.jpg]]
+
+*** Hum Your Own
+
+    [[file:./pictures/fosc2019_buechse_gross_2.jpg]]
 
 ** Install necessary Software
    :PROPERTIES:
@@ -39,4 +45,3 @@
      sudo apt-get install python3-all-dev portaudio19-dev
      sudo -H pip3 install pyaudio
    #+END_SRC
-
